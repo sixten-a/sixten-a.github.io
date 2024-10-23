@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Piirustussovellus</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f0f0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .tool-group {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+            background: #f5f5f5;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            background: #4CAF50;
+            color: white;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+
+        #canvas {
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            cursor: crosshair;
+        }
+
+        input[type="color"] {
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        input[type="range"] {
+            width: 100px;
+        }
+
+        .size-label {
+            min-width: 30px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="toolbar">
+            <div class="tool-group">
+                <button id="pencil" class="active">Kynä</button>
+                <button id="brush">Sivellin</button>
+                <button id="eraser">Kumi</button>
+                <button id="line">Viiva</button>
+                <button id="rectangle">Suorakulmio</button>
+                <button id="circle">Ympyrä</button>
+            </div>
+            <div class="tool-group">
+                <input type="color" id="colorPicker" value="#000000">
+                <input type="range" id="sizeSlider" min="1" max="50" value="5">
+                <span id="sizeLabel" class="size-label">5px</span>
+            </div>
+            <div class="tool-group">
+                <button id="clear">Tyhjennä</button>
+                <button id="undo">Kumoa</button>
+                <button id="save">Tallenna</button>
+                <input type="file" id="imageLoader" accept="image/*" style="display: none">
+                <button id="load">Lataa kuva</button>
+            </div>
+        </div>
+        <canvas id="canvas" width="800" height="600"></canvas>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+        let selectedTool = 'pencil';
+        let startX, startY;
+        let snapshot;
+        const history = [];
+        const maxHistory = 20;
+
+        // Alustetaan canvas valkoisella taustalla
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        saveToHistory();
+
+        // Työkalujen valinta
+        document.querySelectorAll('.toolbar button').forEach(button => {
+            button.addEventListener('click', () => {
+                document.querySelectorAll('.toolbar button').forEach(b => b.classList.remove('active'));
+                if (['pencil', 'brush', 'eraser', 'line', 'rectangle', 'circle'].includes(button.id)) {
+                    button.classList.add('active');
+                    selectedTool = button.id;
+                }
+            });
+        });
+
+        // Piirtämisen käsittely
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing);
+
+        function startDrawing(e) {
+            isDrawing = true;
+            [startX, startY] = [e.offsetX, e.offsetY];
+            ctx.beginPath();
+            ctx.moveTo(startX, startY);
+            snapshot = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+
+            const x = e.offsetX;
+            const y = e.offsetY;
+            const color = document.getElementById('colorPicker').value;
+            const size = document.getElementById('sizeSlider').value;
+
+            ctx.strokeStyle = selectedTool === 'eraser' ? 'white' : color;
+            ctx.lineWidth = size;
+            ctx.lineCap = 'round';
+
+            switch(selectedTool) {
+                case 'pencil':
+                    ctx.lineTo(x, y);
+                    ctx.stroke();
+                    break;
+                case 'brush':
+                    ctx.lineTo(x, y);
+                    ctx.stroke();
+                    break;
+                case 'eraser':
+                    ctx.lineTo(x, y);
+                    ctx.stroke();
+                    break;
+                case 'line':
+                    ctx.putImageData(snapshot, 0, 0);
+                    ctx.beginPath();
+                    ctx.moveTo(startX, startY);
+                    ctx.lineTo(x, y);
+                    ctx.stroke();
+                    break;
+                case 'rectangle':
+                    ctx.putImageData(snapshot, 0, 0);
+                    ctx.strokeRect(startX, startY, x - startX, y - startY);
+                    break;
+                case 'circle':
+                    ctx.putImageData(snapshot, 0, 0);
+                    const radius = Math.sqrt(Math.pow(x - startX, 2) + Math.pow(y - startY, 2));
+                    ctx.beginPath();
+                    ctx.arc(startX, startY, radius, 0, 2 * Math.PI);
+                    ctx.stroke();
+                    break;
+            }
+        }
+
+        function stopDrawing() {
+            if (isDrawing) {
+                isDrawing = false;
+                saveToHistory();
+            }
+        }
+
+        // Historian hallinta
+        function saveToHistory() {
+            history.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+            if (history.length > maxHistory) {
+                history.shift();
+            }
+        }
+
+        // Kumoa-toiminto
+        document.getElementById('undo').addEventListener('click', () => {
+            if (history.length > 1) {
+                history.pop(); // Poista nykyinen tila
+                ctx.putImageData(history[history.length - 1], 0, 0);
+            }
+        });
+
+        // Tyhjennä canvas
+        document.getElementById('clear').addEventListener('click', () => {
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            saveToHistory();
+        });
+
+        // Koon säätimen päivitys
+        document.getElementById('sizeSlider').addEventListener('input', (e) => {
+            document.getElementById('sizeLabel').textContent = `${e.target.value}px`;
+        });
+
+        // Tallenna kuva
+        document.getElementById('save').addEventListener('click', () => {
+            const link = document.createElement('a');
+            link.download = 'piirustus.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        });
+
+        // Kuvan lataaminen
+        document.getElementById('load').addEventListener('click', () => {
+            document.getElementById('imageLoader').click();
+        });
+
+        document.getElementById('imageLoader').addEventListener('change', (e) => {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    // Säilytä kuvasuhde ja sovita canvas-alueelle
+                    const scale = Math.min(
+                        canvas.width / img.width,
+                        canvas.height / img.height
+                    );
+                    const x = (canvas.width - img.width * scale) / 2;
+                    const y = (canvas.height - img.height * scale) / 2;
+
+                    ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
+                    saveToHistory();
+                }
+                img.src = event.target.result;
+            }
+            reader.readAsDataURL(e.target.files[0]);
+        });
+    </script>
+</body>
+</html>
