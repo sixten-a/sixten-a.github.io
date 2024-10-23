@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ajastin</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            text-align: center;
+        }
+
+        .time-input {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            justify-content: center;
+        }
+
+        .time-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        input[type="number"] {
+            width: 70px;
+            height: 40px;
+            font-size: 1.5rem;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            margin: 0.5rem 0;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        select {
+            width: 200px;
+            height: 40px;
+            margin: 1rem 0;
+            font-size: 1rem;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            padding: 0 1rem;
+        }
+
+        button {
+            background: #4CAF50;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.2rem;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin: 0.5rem;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+
+        button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
+
+        #display {
+            font-size: 3.5rem;
+            font-weight: bold;
+            margin: 2rem 0;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem;
+            background: #4CAF50;
+            color: white;
+            border-radius: 8px;
+            display: none;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+            }
+            to {
+                transform: translateX(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Ajastin</h1>
+        <div class="time-input">
+            <div class="time-section">
+                <label>Tunnit</label>
+                <input type="number" id="hours" min="0" max="23" value="0">
+            </div>
+            <div class="time-section">
+                <label>Minuutit</label>
+                <input type="number" id="minutes" min="0" max="59" value="0">
+            </div>
+            <div class="time-section">
+                <label>Sekunnit</label>
+                <input type="number" id="seconds" min="0" max="59" value="0">
+            </div>
+        </div>
+
+        <select id="sound-select">
+            <option value="beep">Perusääni</option>
+            <option value="bell">Kellonsoitto</option>
+            <option value="alarm">Hälytys</option>
+        </select>
+
+        <div id="display">00:00:00</div>
+
+        <button id="start">Käynnistä</button>
+        <button id="pause" disabled>Tauko</button>
+        <button id="reset" disabled>Nollaa</button>
+    </div>
+
+    <div class="notification" id="notification">
+        Aika on päättynyt!
+    </div>
+
+    <script>
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+        const sounds = {
+            beep: () => {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                oscillator.type = 'sine';
+                oscillator.frequency.value = 440;
+                gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+                gainNode.gain.linearRampToValueAtTime(1, audioContext.currentTime + 0.01);
+                gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.5);
+                oscillator.start();
+                oscillator.stop(audioContext.currentTime + 0.5);
+            },
+            bell: () => {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                oscillator.type = 'sine';
+                oscillator.frequency.value = 587.33; // D5
+                gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+                gainNode.gain.linearRampToValueAtTime(1, audioContext.currentTime + 0.01);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 2);
+                oscillator.start();
+                oscillator.stop(audioContext.currentTime + 2);
+            },
+            alarm: () => {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                oscillator.type = 'sawtooth';
+                oscillator.frequency.value = 880;
+                gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
+                
+                // Create an LFO for amplitude modulation
+                const lfo = audioContext.createOscillator();
+                const lfoGain = audioContext.createGain();
+                lfo.frequency.value = 8;
+                lfoGain.gain.value = 0.5;
+                lfo.connect(lfoGain);
+                lfoGain.connect(gainNode.gain);
+                
+                oscillator.start();
+                lfo.start();
+                setTimeout(() => {
+                    oscillator.stop();
+                    lfo.stop();
+                }, 1500);
+            }
+        };
+
+        let timeLeft = 0;
+        let timerId = null;
+
+        const display = document.getElementById('display');
+        const startButton = document.getElementById('start');
+        const pauseButton = document.getElementById('pause');
+        const resetButton = document.getElementById('reset');
+        const notification = document.getElementById('notification');
+
+        function updateDisplay(seconds) {
+            const h = Math.floor(seconds / 3600);
+            const m = Math.floor((seconds % 3600) / 60);
+            const s = seconds % 60;
+            display.textContent = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        }
+
+        function playSound() {
+            const selectedSound = document.getElementById('sound-select').value;
+            sounds[selectedSound]();
+            notification.style.display = 'block';
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+
+        function startTimer() {
+            if (timerId === null) {
+                const hours = parseInt(document.getElementById('hours').value) || 0;
+                const minutes = parseInt(document.getElementById('minutes').value) || 0;
+                const seconds = parseInt(document.getElementById('seconds').value) || 0;
+                
+                timeLeft = hours * 3600 + minutes * 60 + seconds;
+                
+                if (timeLeft <= 0) return;
+
+                startButton.disabled = true;
+                pauseButton.disabled = false;
+                resetButton.disabled = false;
+
+                timerId = setInterval(() => {
+                    timeLeft--;
+                    updateDisplay(timeLeft);
+                    
+                    if (timeLeft <= 0) {
+                        clearInterval(timerId);
+                        timerId = null;
+                        startButton.disabled = false;
+                        pauseButton.disabled = true;
+                        playSound();
+                    }
+                }, 1000);
+            }
+        }
+
+        function pauseTimer() {
+            if (timerId !== null) {
+                clearInterval(timerId);
+                timerId = null;
+                startButton.disabled = false;
+                pauseButton.disabled = true;
+            }
+        }
+
+        function resetTimer() {
+            clearInterval(timerId);
+            timerId = null;
+            timeLeft = 0;
+            updateDisplay(0);
+            startButton.disabled = false;
+            pauseButton.disabled = true;
+            resetButton.disabled = true;
+            document.getElementById('hours').value = 0;
+            document.getElementById('minutes').value = 0;
+            document.getElementById('seconds').value = 0;
+        }
+
+        startButton.addEventListener('click', startTimer);
+        pauseButton.addEventListener('click', pauseTimer);
+        resetButton.addEventListener('click', resetTimer);
+
+        // Input validation
+        document.querySelectorAll('input[type="number"]').forEach(input => {
+            input.addEventListener('input', function() {
+                if (this.value < 0) this.value = 0;
+                if (this.id === 'hours' && this.value > 23) this.value = 23;
+                if ((this.id === 'minutes' || this.id === 'seconds') && this.value > 59) this.value = 59;
+            });
+        });
+    </script>
+</body>
+</html>

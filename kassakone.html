@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Helppo Kassasovellus</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .section {
+            flex: 1;
+            min-width: 300px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            color: #333;
+        }
+        button {
+            font-size: 16px;
+            padding: 8px 12px;
+            margin: 5px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .delete-btn {
+            font-size: 12px;
+            padding: 4px 8px;
+            background-color: #ff4444;
+        }
+        .delete-btn:hover {
+            background-color: #cc0000;
+        }
+        input {
+            font-size: 16px;
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        input[type="number"] {
+            width: 70px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .editable:hover {
+            background-color: #f0f0f0;
+            cursor: pointer;
+        }
+        #overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+        .popup {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            max-width: 80%;
+            max-height: 80%;
+            overflow-y: auto;
+        }
+        #creditCardEmoji {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+        #receipts {
+            margin-top: 20px;
+        }
+        .receipt {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin: 10px 0;
+            cursor: pointer;
+        }
+        .receipt:hover {
+            background-color: #f0f0f0;
+        }
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #receiptPopup, #receiptPopup * {
+                visibility: visible;
+            }
+            #receiptPopup {
+                position: absolute;
+                left: 0;
+                top: 0;
+            }
+            #receiptPopup button {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Helppo Kassasovellus</h1>
+    
+    <div class="container">
+        <div class="section" id="products">
+            <h2>Tuotteet</h2>
+            <input type="text" id="productName" placeholder="Tuotteen nimi">
+            <input type="number" id="productPrice" placeholder="Hinta">
+            <button onclick="addProduct()">Lisää tuote</button>
+            <table id="productTable">
+                <thead>
+                    <tr>
+                        <th>Nimi</th>
+                        <th>Hinta</th>
+                        <th>Toiminnot</th>
+                    </tr>
+                </thead>
+                <tbody id="productList"></tbody>
+            </table>
+            <button onclick="saveToCSV()">Tallenna CSV</button>
+            <input type="file" id="csvFile" accept=".csv" onchange="loadFromCSV()">
+        </div>
+
+        <div class="section" id="cart">
+            <h2>Ostoskori</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tuote</th>
+                        <th>Määrä</th>
+                        <th>Alennus-%</th>
+                        <th>Hinta</th>
+                        <th>Toiminnot</th>
+                    </tr>
+                </thead>
+                <tbody id="cartList"></tbody>
+            </table>
+            <p>Yhteensä: <span id="total">0</span> €</p>
+            <button onclick="showPayment()">Siirry maksamaan</button>
+        </div>
+
+        <div class="section" id="receipts">
+            <h2>Vanhat kuitit</h2>
+            <div id="receiptList"></div>
+        </div>
+    </div>
+
+    <div id="overlay">
+        <div id="paymentPopup" class="popup">
+            <div id="creditCardEmoji">💳</div>
+            <h2>Maksu</h2>
+            <p>Summa: <span id="paymentTotal"></span> €</p>
+            <button onclick="finishPayment()">Maksa</button>
+            <button onclick="cancelPayment()">Peruuta</button>
+        </div>
+        <div id="receiptPopup" class="popup" style="display: none;">
+            <h2>Kuitti</h2>
+            <div id="receiptContent"></div>
+            <button onclick="printReceipt()">Tulosta</button>
+            <button onclick="closeReceipt()">Sulje</button>
+        </div>
+    </div>
+
+    <script>
+        let products = [];
+        let cart = [];
+        let receipts = JSON.parse(localStorage.getItem('receipts') || '[]');
+
+        function addProduct() {
+            const name = document.getElementById('productName').value;
+            const price = parseFloat(document.getElementById('productPrice').value);
+            if (name && price) {
+                products.push({name, price});
+                updateProductList();
+                document.getElementById('productName').value = '';
+                document.getElementById('productPrice').value = '';
+            }
+        }
+
+        function updateProductList() {
+            const list = document.getElementById('productList');
+            list.innerHTML = '';
+            products.forEach((product, index) => {
+                const row = list.insertRow();
+                row.innerHTML = `
+                    <td class="editable" onclick="editProduct(${index}, 'name')">${product.name}</td>
+                    <td class="editable" onclick="editProduct(${index}, 'price')">${product.price.toFixed(2)} €</td>
+                    <td>
+                        <button onclick="addToCart(${index})">Lisää koriin</button>
+                        <button class="delete-btn" onclick="removeProduct(${index})">Poista</button>
+                    </td>
+                `;
+            });
+        }
+
+        function editProduct(index, field) {
+            const newValue = prompt(`Anna uusi ${field === 'name' ? 'nimi' : 'hinta'} tuotteelle:`);
+            if (newValue !== null) {
+                if (field === 'name') {
+                    products[index].name = newValue;
+                } else {
+                    products[index].price = parseFloat(newValue);
+                }
+                updateProductList();
+            }
+        }
+
+        function removeProduct(index) {
+            if (confirm('Haluatko varmasti poistaa tuotteen?')) {
+                products.splice(index, 1);
+                updateProductList();
+            }
+        }
+
+        function addToCart(index) {
+            const existingItem = cart.find(item => item.product === products[index]);
+            if (existingItem) {
+                existingItem.quantity++;
+            } else {
+                cart.push({
+                    product: products[index],
+                    quantity: 1,
+                    discount: 0
+                });
+            }
+            updateCart();
+        }
+
+        function updateCart() {
+            const list = document.getElementById('cartList');
+            list.innerHTML = '';
+            let total = 0;
+            cart.forEach((item, index) => {
+                const row = list.insertRow();
+                const price = item.product.price;
+                const discountedPrice = price * (1 - item.discount / 100);
+                const subtotal = discountedPrice * item.quantity;
+                total += subtotal;
+                row.innerHTML = `
+                    <td>${item.product.name}</td>
+                    <td>${item.quantity}</td>
+                    <td>
+                        <input type="number" min="0" max="100" value="${item.discount}" 
+                        onchange="updateDiscount(${index}, this.value)">
+                    </td>
+                    <td>${subtotal.toFixed(2)} €</td>
+                    <td>
+                        <button onclick="changeQuantity(${index}, 1)">+</button>
+                        <button onclick="changeQuantity(${index}, -1)">-</button>
+                        <button class="delete-btn" onclick="removeFromCart(${index})">Poista</button>
+                    </td>
+                `;
+            });
+            document.getElementById('total').textContent = total.toFixed(2);
+        }
+
+        function updateDiscount(index, value) {
+            cart[index].discount = parseFloat(value) || 0;
+            updateCart();
+        }
+
+        function changeQuantity(index, change) {
+            cart[index].quantity += change;
+            if (cart[index].quantity <= 0) {
+                cart.splice(index, 1);
+            }
+            updateCart();
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCart();
+        }
+
+        function showPayment() {
+            if (cart.length === 0) {
+                alert('Ostoskori on tyhjä!');
+                return;
+            }
+            document.getElementById('overlay').style.display = 'flex';
+            document.getElementById('paymentPopup').style.display = 'block';
+            document.getElementById('receiptPopup').style.display = 'none';
+            document.getElementById('paymentTotal').textContent = document.getElementById('total').textContent;
+        }
+
+        function finishPayment() {
+            const receipt = {
+                date: new Date().toISOString(),
+                items: cart.map(item => ({
+                    name: item.product.name,
+                    quantity: item.quantity,
+                    price: item.product.price,
+                    discount: item.discount
+                })),
+                total: parseFloat(document.getElementById('total').textContent)
+            };
+            receipts.unshift(receipt);
+            localStorage.setItem('receipts', JSON.stringify(receipts));
+            updateReceiptList();
+            alert('Kiitos ostoksestasi!');
+            cart = [];
+            updateCart();
+            cancelPayment();
+        }
+
+        function cancelPayment() {
+            document.getElementById('overlay').style.display = 'none';
+        }
+
+        function updateReceiptList() {
+            const list = document.getElementById('receiptList');
+            list.innerHTML = '';
+            receipts.forEach((receipt, index) => {
+                const div = document.createElement('div');
+                div.className = 'receipt';
+                const date = new Date(receipt.date).toLocaleDateString('fi-FI', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                div.innerHTML = `
+                    Kuitti ${date}<br>
+                    Summa: ${receipt.total.toFixed(2)} €
+                `;
+                div.onclick = () => showReceiptDetails(index);
+                list.appendChild(div);
+            });
+        }
+
+        function showReceiptDetails(index) {
+            const receipt = receipts[index];
+            const date = new Date(receipt.date).toLocaleDateString('fi-FI', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            let content = `
+                <h3>Kuitti</h3>
+                <p>Päivämäärä: ${date}</p>
+                <table>
+                    <tr>
+                        <th>Tuote</th>
+                        <th>Määrä</th>
+                        <th>Hinta</th>
+                        <th>Alennus</th>
+                        <th>Yhteensä</th>
+                    </tr>
+            `;
+            
+            receipt.items.forEach(item => {
+                const originalPrice = item.price * item.quantity;
+                const discount = item.discount > 0 ? originalPrice * (item.discount / 100) : 0;
+                const total = originalPrice - discount;
+                content += `
+                    <tr>
+                        <td>${item.name}</td>
+                        <td>${item.quantity}</td>
+                        <td>${item.price.toFixed(2)} €</td>
+                        <td>${item.discount > 0 ? `-${item.discount}%` : '-'}</td>
+                        <td>${total.toFixed(2)} €</td>
+                    </tr>
+                `;
+            });
+            
+            content += `
+                </table>
+                <p><strong>Yhteensä: ${receipt.total.toFixed(2)} €</strong></p>
+            `;
+            
+            document.getElementById('receiptContent').innerHTML = content;
+            document.getElementById('overlay').style.display = 'flex';
+            document.getElementById('paymentPopup').style.display = 'none';
+            document.getElementById('receiptPopup').style.display = 'block';
+        }
+
+        function printReceipt() {
+            window.print();
+        }
+
+        function closeReceipt() {
+            document.getElementById('overlay').style.display = 'none';
+        }
+
+        function saveToCSV() {
+            let csv = 'Nimi,Hinta\n';
+            products.forEach(product => {
+                csv += `"${product.name}",${product.price}\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute("href", url);
+                link.setAttribute("download", "tuotteet.csv");
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+
+        function loadFromCSV() {
+            const file = document.getElementById('csvFile').files[0];
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const csv = event.target.result;
+                const lines = csv.split('\n');
+                products = [];
+                for(let i = 1; i < lines.length; i++) {
+                    if (lines[i].trim() === '') continue;
+                    const [name, price] = lines[i].split(',');
+                    products.push({
+                        name: name.replace(/"/g, ''),
+                        price: parseFloat(price)
+                    });
+                }
+                updateProductList();
+            };
+            reader.readAsText(file);
+        }
+
+        // Alusta sovellus
+        updateProductList();
+        updateCart();
+        updateReceiptList();
+    </script>
+</body>
+</html>
