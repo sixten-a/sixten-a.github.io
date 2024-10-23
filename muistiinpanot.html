@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Muistiinpanot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .note {
+            background-color: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .add-button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+        .delete-button {
+            background-color: #ff4444;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            float: right;
+        }
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            min-height: 100px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Muistiinpanot</h1>
+    <button class="add-button" onclick="addNote()">+ Lisää muistiinpano</button>
+    <div id="notes-container"></div>
+
+    <script>
+        function addNote() {
+            const container = document.getElementById('notes-container');
+            const noteDiv = document.createElement('div');
+            noteDiv.className = 'note';
+            
+            const textarea = document.createElement('textarea');
+            textarea.placeholder = 'Kirjoita muistiinpano tähän...';
+            textarea.oninput = function() {
+                saveNotes();
+            };
+            
+            const deleteButton = document.createElement('button');
+            deleteButton.className = 'delete-button';
+            deleteButton.textContent = 'Poista';
+            deleteButton.onclick = function() {
+                container.removeChild(noteDiv);
+                saveNotes();
+            };
+            
+            noteDiv.appendChild(deleteButton);
+            noteDiv.appendChild(textarea);
+            container.appendChild(noteDiv);
+        }
+
+        function saveNotes() {
+            const notes = [];
+            document.querySelectorAll('.note textarea').forEach(textarea => {
+                if (textarea.value.trim() !== '') {
+                    notes.push(textarea.value);
+                }
+            });
+            localStorage.setItem('notes', JSON.stringify(notes));
+        }
+
+        function loadNotes() {
+            const savedNotes = localStorage.getItem('notes');
+            if (savedNotes) {
+                JSON.parse(savedNotes).forEach(noteText => {
+                    const container = document.getElementById('notes-container');
+                    const noteDiv = document.createElement('div');
+                    noteDiv.className = 'note';
+                    
+                    const textarea = document.createElement('textarea');
+                    textarea.value = noteText;
+                    textarea.oninput = function() {
+                        saveNotes();
+                    };
+                    
+                    const deleteButton = document.createElement('button');
+                    deleteButton.className = 'delete-button';
+                    deleteButton.textContent = 'Poista';
+                    deleteButton.onclick = function() {
+                        container.removeChild(noteDiv);
+                        saveNotes();
+                    };
+                    
+                    noteDiv.appendChild(deleteButton);
+                    noteDiv.appendChild(textarea);
+                    container.appendChild(noteDiv);
+                });
+            }
+        }
+
+        // Lataa tallennetut muistiinpanot kun sivu avataan
+        loadNotes();
+    </script>
+</body>
+</html>
