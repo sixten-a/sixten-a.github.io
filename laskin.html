@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <title>Moderni Laskin</title>
+    <style>
+        :root {
+            --bg-color: #1a1a2e;
+            --display-bg: #16213e;
+            --button-color: #0f3460;
+            --button-hover: #536dfe;
+            --text-color: #e7e7e7;
+        }
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(45deg, #2c3e50, #3498db);
+            color: var(--text-color);
+        }
+        .calculator {
+            background-color: var(--bg-color);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+            width: 300px;
+        }
+        #display {
+            width: calc(100% - 20px);
+            height: 70px;
+            margin-bottom: 15px;
+            text-align: right;
+            font-size: 32px;
+            padding: 10px;
+            background-color: var(--display-bg);
+            border: none;
+            border-radius: 10px;
+            color: var(--text-color);
+        }
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        button {
+            padding: 15px;
+            font-size: 18px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background-color: var(--button-color);
+            color: var(--text-color);
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            background-color: var(--button-hover);
+            transform: scale(1.05);
+        }
+        .operator {
+            background-color: #536dfe;
+        }
+        .function {
+            background-color: #ff6b6b;
+        }
+        button:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <input type="text" id="display" readonly>
+        <div class="buttons">
+            <button class="function" onclick="clearDisplay()">C</button>
+            <button class="function" onclick="removeLastChar()">⌫</button>
+            <button class="function" onclick="appendToDisplay('%')">mod</button>
+            <button class="operator" onclick="appendToDisplay('/')")>÷</button>
+            
+            <button onclick="appendToDisplay('7')">7</button>
+            <button onclick="appendToDisplay('8')">8</button>
+            <button onclick="appendToDisplay('9')">9</button>
+            <button class="operator" onclick="appendToDisplay('*')">×</button>
+            
+            <button onclick="appendToDisplay('4')">4</button>
+            <button onclick="appendToDisplay('5')">5</button>
+            <button onclick="appendToDisplay('6')">6</button>
+            <button class="operator" onclick="appendToDisplay('-')">-</button>
+            
+            <button onclick="appendToDisplay('1')">1</button>
+            <button onclick="appendToDisplay('2')">2</button>
+            <button onclick="appendToDisplay('3')">3</button>
+            <button class="operator" onclick="appendToDisplay('+')">+</button>
+            
+            <button onclick="appendToDisplay('0')">0</button>
+            <button onclick="appendToDisplay('.')">.</button>
+            <button class="function" onclick="calculateSquareRoot()">√</button>
+            <button class="operator" onclick="calculate()">=</button>
+        </div>
+    </div>
+
+    <script>
+        const display = document.getElementById('display');
+
+        function appendToDisplay(value) {
+            display.value += value === '%' ? 'mod' : value;
+        }
+
+        function clearDisplay() {
+            display.value = '';
+        }
+
+        function removeLastChar() {
+            display.value = display.value.slice(0, -1);
+        }
+
+        function calculateSquareRoot() {
+            try {
+                display.value = Math.sqrt(eval(display.value)).toFixed(4);
+            } catch (error) {
+                display.value = 'Virhe';
+            }
+        }
+
+        function calculate() {
+            try {
+                // Replace 'mod' with '%' for calculation
+                const expression = display.value.replace(/mod/g, '%');
+                const result = eval(expression);
+                
+                display.value = Number.isInteger(result) ? 
+                    result.toString() : 
+                    result.toFixed(4);
+            } catch (error) {
+                display.value = 'Virhe';
+            }
+        }
+
+        // Keyboard support
+        document.addEventListener('keydown', (event) => {
+            const key = event.key;
+            const validKeys = ['0','1','2','3','4','5','6','7','8','9','+','-','*','/','.',',','Enter','Backspace'];
+            
+            if (validKeys.includes(key)) {
+                event.preventDefault();
+                switch(key) {
+                    case 'Enter':
+                        calculate();
+                        break;
+                    case 'Backspace':
+                        removeLastChar();
+                        break;
+                    case ',':
+                        appendToDisplay('.');
+                        break;
+                    default:
+                        appendToDisplay(key);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
