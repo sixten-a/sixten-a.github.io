@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalenteri Kauppa</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="script.js" defer></script>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">Sixun Kauppa</div>
+            <ul>
+                <li><a href="#featured-products">Tuotteet</a></li>
+                <li><a href="#" id="wishlist-toggle">Toivelista (<span id="wishlist-count">0</span>)</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <h1>Tervetuloa Sixun Kauppaan!</h1>
+        </section>
+
+        <section class="featured-products">
+            <h2>Suosituimmat tuotteemme</h2>
+            <div class="product-grid">
+                <div class="product-card">
+                    <img src="kalenteri1.jpg" alt="Taskukalenteri 2025">
+                    <h3>taskukalenteri 2025</h3>
+                    <p>2.99 €</p>
+                    <button>Lisää toivelistaan</button>
+                </div>
+                <div class="product-card">
+                    <img src="kalenteri2.jpg" alt="käsikoru">
+                    <h3>käsi koru lapsille tehty</h3>
+                    <p>0.20 €</p>
+                    <button>Lisää toivelistaan</button>
+                </div>
+                <div class="product-card">
+                    <img src="kalenteri3.jpg" alt="Viikkokalenteri">
+                    <h3>kalenteri 2025</h3>
+                    <p>24.95 €</p>
+                    <button>Lisää toivelistaan</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="wishlist-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Toivelista</h2>
+            <div id="wishlist-items"></div>
+            <div id="wishlist-total"></div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2023 Kalenteri Kauppa. Kaikki oikeudet pidätetään.</p>
+        </div>
+    </footer>
+</body>
+</html>
