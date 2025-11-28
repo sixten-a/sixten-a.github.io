@@ -219,10 +219,164 @@
         .error-message.show {
             display: block;
         }
+
+        .admin-panel {
+            display: none;
+            position: fixed;
+            top: 20px;
+            right: 80px;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+            max-width: 400px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .admin-panel.show {
+            display: block;
+        }
+
+        .admin-panel h3 {
+            color: #2d3748;
+            margin-top: 0;
+        }
+
+        .logout-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 0.75rem 1.5rem;
+            background: #f56565;
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: background 0.2s;
+            z-index: 100;
+            display: none;
+        }
+
+        .logout-btn.show {
+            display: block;
+        }
+
+        .logout-btn:hover {
+            background: #e53e3e;
+        }
+
+        .edit-section {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .edit-section:last-child {
+            border-bottom: none;
+        }
+
+        .edit-section label {
+            display: block;
+            color: #2d3748;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .edit-section input,
+        .edit-section textarea {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #cbd5e0;
+            border-radius: 0.5rem;
+            font-size: 0.9rem;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+
+        .edit-section textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .edit-section input:focus,
+        .edit-section textarea:focus {
+            outline: none;
+            border-color: #4299e1;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+        }
+
+        .edit-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .edit-actions button {
+            flex: 1;
+            padding: 0.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-save {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-save:hover {
+            background: #38a169;
+        }
+
+        .btn-cancel-edit {
+            background: #e2e8f0;
+            color: #2d3748;
+        }
+
+        .btn-cancel-edit:hover {
+            background: #cbd5e0;
+        }
     </style>
 </head>
 <body>
-    <button class="login-btn" onclick="openLoginModal()">Kirjaudu</button>
+    <body>
+    <button class="login-btn" id="loginBtn" onclick="openLoginModal()">Kirjaudu</button>
+    <button class="logout-btn" id="logoutBtn" onclick="handleLogout()">Kirjaudu ulos</button>
+
+    <div class="admin-panel" id="adminPanel">
+        <h3>Muokkaa sivua</h3>
+        
+        <div class="edit-section">
+            <label for="editTitle">Pääotsikko:</label>
+            <input type="text" id="editTitle" placeholder="Sixun sovellukset">
+            <div class="edit-actions">
+                <button class="btn-save" onclick="saveTitle()">Tallenna</button>
+            </div>
+        </div>
+
+        <div class="edit-section">
+            <label for="editBackgroundColor">Taustaksi</label>
+            <input type="color" id="editBackgroundColor">
+            <div class="edit-actions">
+                <button class="btn-save" onclick="saveBackgroundColor()">Tallenna</button>
+            </div>
+        </div>
+
+        <div class="edit-section">
+            <label for="editBackgroundUrl">Tausta-URL (valinnainen):</label>
+            <input type="text" id="editBackgroundUrl" placeholder="https://...">
+            <div class="edit-actions">
+                <button class="btn-save" onclick="saveBackgroundUrl()">Tallenna</button>
+            </div>
+        </div>
+    </div>
 
     <div class="modal" id="loginModal">
         <div class="modal-content">
@@ -257,7 +411,7 @@
         </svg>
 
         <h1>Sixun sovellukset</h1>
-        
+
         <div class="app-grid">
             <a href="kauppa/" class="app-link">
                 <h2>Kauppa</h2>
@@ -273,12 +427,12 @@
                 <h2>Laskin</h2>
                 <p>Laske laskuja</p>
             </a>
-            
+
             <a href="ristinolla.html" class="app-link">
                 <h2>Ristinolla</h2>
                 <p>Pelaa klassista peliä</p>
             </a>
-            
+
             <a href="ajastin.html" class="app-link">
                 <h2>Ajastin</h2>
                 <p>Seuraa aikaa tarkasti</p>
@@ -304,13 +458,19 @@
                 <p>Saattaa toimia tai olla rikki..</p>
             </a>
 
-            
+
         </div>
     </div>
 
     <script>
         const VALID_USERNAME = "Sixten-a";
         const VALID_PASSWORD = "haraldous67";
+        let isLoggedIn = false;
+
+        // Lataa tallennetut muutokset sivun latauksessa
+        window.addEventListener("DOMContentLoaded", function() {
+            loadSavedChanges();
+        });
 
         function openLoginModal() {
             document.getElementById("loginModal").classList.add("show");
@@ -326,16 +486,101 @@
 
         function handleLogin(event) {
             event.preventDefault();
-            
+
             const username = document.getElementById("username").value;
             const password = document.getElementById("password").value;
-            
+
             if (username === VALID_USERNAME && password === VALID_PASSWORD) {
-                alert("Tervetuloa, " + username + "! Kirjautuminen onnistui.");
+                isLoggedIn = true;
+                localStorage.setItem("isLoggedIn", "true");
                 closeLoginModal();
-                // Tähän voidaan lisätä ohjaus kauppias-dashboardiin tai muuhun
+                updateUIForLoggedIn();
+                loadCurrentValues();
+                alert("Tervetuloa, " + username + "! Voit nyt muokata sivua.");
             } else {
                 document.getElementById("errorMessage").classList.add("show");
+            }
+        }
+
+        function handleLogout() {
+            isLoggedIn = false;
+            localStorage.removeItem("isLoggedIn");
+            updateUIForLoggedOut();
+            alert("Olet kirjautunut ulos.");
+        }
+
+        function updateUIForLoggedIn() {
+            document.getElementById("loginBtn").style.display = "none";
+            document.getElementById("logoutBtn").classList.add("show");
+            document.getElementById("adminPanel").classList.add("show");
+        }
+
+        function updateUIForLoggedOut() {
+            document.getElementById("loginBtn").style.display = "block";
+            document.getElementById("logoutBtn").classList.remove("show");
+            document.getElementById("adminPanel").classList.remove("show");
+        }
+
+        function loadCurrentValues() {
+            const title = document.querySelector("h1").textContent;
+            document.getElementById("editTitle").value = title;
+        }
+
+        function saveTitle() {
+            const newTitle = document.getElementById("editTitle").value;
+            if (newTitle.trim()) {
+                document.querySelector("h1").textContent = newTitle;
+                localStorage.setItem("siteTitle", newTitle);
+                alert("Otsikko tallennettu!");
+            }
+        }
+
+        function saveBackgroundColor() {
+            const color = document.getElementById("editBackgroundColor").value;
+            if (color) {
+                document.body.style.background = color;
+                localStorage.setItem("backgroundColor", color);
+                alert("Tausta tallennettu!");
+            }
+        }
+
+        function saveBackgroundUrl() {
+            const url = document.getElementById("editBackgroundUrl").value;
+            if (url.trim()) {
+                document.body.style.backgroundImage = "url('" + url + "')";
+                localStorage.setItem("backgroundUrl", url);
+                alert("Tausta-URL tallennettu!");
+            } else {
+                document.body.style.backgroundImage = "none";
+                localStorage.removeItem("backgroundUrl");
+                alert("Tausta-URL poistettu!");
+            }
+        }
+
+        function loadSavedChanges() {
+            // Lataa tallennettu otsikko
+            const savedTitle = localStorage.getItem("siteTitle");
+            if (savedTitle) {
+                document.querySelector("h1").textContent = savedTitle;
+            }
+
+            // Lataa tallennettu taustaksi
+            const savedBgColor = localStorage.getItem("backgroundColor");
+            if (savedBgColor) {
+                document.body.style.background = savedBgColor;
+            }
+
+            // Lataa tallennettu tausta-URL
+            const savedBgUrl = localStorage.getItem("backgroundUrl");
+            if (savedBgUrl) {
+                document.body.style.backgroundImage = "url('" + savedBgUrl + "')";
+            }
+
+            // Tarkista kirjautumisen tila
+            if (localStorage.getItem("isLoggedIn") === "true") {
+                isLoggedIn = true;
+                updateUIForLoggedIn();
+                loadCurrentValues();
             }
         }
 
