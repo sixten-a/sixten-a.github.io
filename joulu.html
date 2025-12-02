@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Joulukalenteri</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1a472a 0%, #2d5f3f 50%, #c41e3a 100%);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 3rem;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .door {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1;
+            perspective: 1200px;
+            cursor: pointer;
+            z-index: 1;
+        }
+
+        .door.opened {
+            z-index: 10;
+        }
+
+        .door-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            transform-style: preserve-3d;
+        }
+
+        .door.opened .door-inner {
+            transform: rotateY(180deg);
+        }
+
+        .door-front, .door-back {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .door-front {
+            background: linear-gradient(135deg, #c41e3a 0%, #a01729 100%);
+            color: white;
+            font-weight: bold;
+            font-size: 2.5rem;
+            border: 3px solid #8b0000;
+            position: relative;
+        }
+
+        .door-front::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            height: 80%;
+            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.2), transparent);
+            border-radius: 10px;
+        }
+
+        .door-front:hover {
+            background: linear-gradient(135deg, #d63347 0%, #b31f33 100%);
+        }
+
+        .door-front.locked {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .door-front.locked:hover {
+            background: linear-gradient(135deg, #c41e3a 0%, #a01729 100%);
+        }
+
+        .lock-icon {
+            font-size: 1rem;
+            margin-top: 0.5rem;
+            opacity: 0.7;
+        }
+
+        .door-back {
+            background: white;
+            transform: rotateY(180deg);
+            padding: 1rem;
+            overflow: auto;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .door-back img {
+            max-width: 90%;
+            max-height: 50%;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            object-fit: cover;
+        }
+
+        .door-back-content {
+            text-align: center;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            padding: 0.5rem;
+        }
+
+        .door-back h3 {
+            color: #c41e3a;
+            margin-bottom: 0.3rem;
+            font-size: 1rem;
+        }
+
+        .door-back p {
+            color: #333;
+            font-size: 0.8rem;
+            margin-bottom: 0.8rem;
+            line-height: 1.2;
+        }
+
+        .edit-button {
+            background: #4299e1;
+            color: white;
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: background 0.2s;
+            margin-bottom: 0.3rem;
+        }
+
+        .edit-button:hover {
+            background: #2b6cb0;
+        }
+
+        .close-door {
+            background: #c41e3a;
+            color: white;
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            margin-top: 0;
+        }
+
+        .close-door:hover {
+            background: #a01729;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 500;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-content h2 {
+            color: #c41e3a;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            color: #333;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #cbd5e0;
+            border-radius: 5px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #c41e3a;
+            box-shadow: 0 0 0 3px rgba(196, 30, 58, 0.1);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .modal-buttons button {
+            flex: 1;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-save {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-save:hover {
+            background: #38a169;
+        }
+
+        .btn-cancel {
+            background: #e2e8f0;
+            color: #333;
+        }
+
+        .btn-cancel:hover {
+            background: #cbd5e0;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 2rem;
+            padding: 0.75rem 1.5rem;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background 0.2s;
+        }
+
+        .back-link:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .calendar-grid {
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+                gap: 1rem;
+            }
+
+            .door-front {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">← Takaisin</a>
+
+        <div class="header">
+            <h1>🎄 Joulukalenteri 🎄</h1>
+            <p>Avaa luukku joka päivä!</p>
+        </div>
+
+        <div class="calendar-grid" id="calendarGrid"></div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <h2>Muokkaa päivää <span id="editDay">1</span></h2>
+            
+            <div class="form-group">
+                <label>Joulumainen kuva:</label>
+                <div id="generatedImage" style="width: 100%; aspect-ratio: 1; background: #f0f0f0; border-radius: 8px; margin-bottom: 1rem; overflow: hidden;">
+                    <img id="genImg" src="" style="width: 100%; height: 100%; object-fit: cover;" alt="Generoitu kuva">
+                </div>
+                <button type="button" class="edit-button" onclick="generateNewImage(this)" style="width: 100%;">Generoi uusi kuva</button>
+                <small style="color: #666; display: block; margin-top: 0.5rem;">
+                    Klikkaa "Generoi uusi kuva" saadaksesi joulumaisen kuvan tekoälyllä!
+                </small>
+            </div>
+
+            <div class="form-group">
+                <label for="dayText">Teksti:</label>
+                <textarea id="dayText" placeholder="Kirjoita jotain jouluista!"></textarea>
+            </div>
+
+            <div class="modal-buttons">
+                <button class="btn-save" onclick="saveDayContent()">Tallenna</button>
+                <button class="btn-cancel" onclick="closeEditModal()">Peruuta</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentEditDay = null;
+        let currentGeneratedImage = null;
+        const today = new Date();
+        const currentMonth = today.getMonth() + 1;
+        const currentDate = today.getDate();
+
+        const christmasPrompts = [
+            "Beautiful Christmas tree with colorful ornaments and lights",
+            "Cozy Christmas scene with fireplace and stockings",
+            "Winter wonderland with snow-covered pine trees",
+            "Christmas presents wrapped in colorful ribbons under a tree",
+            "Snowy village with Christmas lights and decorations",
+            "Christmas cookies and hot chocolate by the window",
+            "Reindeer in the snow with Christmas lights",
+            "Christmas wreath with holly and red berries",
+            "Gingerbread house with icing decorations",
+            "Christmas carolers in the snow",
+            "Festive Christmas dinner table with candles",
+            "Sledding down a snowy Christmas hill",
+            "Christmas stockings hanging by fireplace",
+            "Snowflakes and Christmas ornaments background",
+            "Christmas angel with golden light",
+            "Festive holiday market with lights",
+            "Christmas bells with holly decoration",
+            "Family opening Christmas presents together",
+            "Hot cocoa with marshmallows and Christmas cookies",
+            "Icicles and Christmas lights on house",
+            "Christmas candles with festive decorations",
+            "Snowy Christmas Eve night with stars",
+            "Christmas nativity scene",
+            "Winter landscape with Christmas cabin"
+        ];
+
+        // Alusta kalenteri
+        function initCalendar() {
+            const grid = document.getElementById('calendarGrid');
+            
+            for (let day = 1; day <= 24; day++) {
+                const door = createDoor(day);
+                grid.appendChild(door);
+            }
+            
+            loadAllContent();
+        }
+
+        function createDoor(day) {
+            const doorEl = document.createElement('div');
+            doorEl.className = 'door';
+            doorEl.id = `door-${day}`;
+            
+            const isAvailable = isDateAvailable(day);
+            
+            doorEl.innerHTML = `
+                <div class="door-inner">
+                    <div class="door-front ${!isAvailable ? 'locked' : ''}" onclick="handleDoorClick(${day}, event)">
+                        <div>${day}</div>
+                        ${!isAvailable ? '<div class="lock-icon">🔒</div>' : ''}
+                    </div>
+                    <div class="door-back">
+                        <div class="door-back-content">
+                            <img id="img-${day}" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Crect fill='%23e0e0e0' width='200' height='200'/%3E%3Ctext x='50%' y='50%' text-anchor='middle' dy='.3em' fill='%23999' font-size='16'%3ELatautuu...%3C/text%3E%3C/svg%3E" alt="Joulukalenteri päivä ${day}">
+                            <h3>Päivä ${day}</h3>
+                            <p id="text-${day}">Joulun odotus!</p>
+                            <button class="edit-button" onclick="openEditModal(${day})">Muokkaa</button>
+                            <button class="close-door" onclick="closeDoor(${day})">Sulje</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            return doorEl;
+        }
+
+        function isDateAvailable(day) {
+            if (currentMonth < 12) {
+                return false;
+            }
+            return currentDate >= day;
+        }
+
+        function handleDoorClick(day, event) {
+            event.stopPropagation();
+            
+            if (!isDateAvailable(day)) {
+                alert(`Tämä luukku avautuu 24.12.${new Date().getFullYear()} kun päivä on ${day}.12.!`);
+                return;
+            }
+            
+            const door = document.getElementById(`door-${day}`);
+            
+            // Jos luukku ei ole vielä avattu, generoi kuva
+            if (!door.classList.contains('opened')) {
+                generateImageForDay(day);
+            }
+            
+            door.classList.toggle('opened');
+        }
+
+        function closeDoor(day) {
+            const door = document.getElementById(`door-${day}`);
+            door.classList.remove('opened');
+        }
+
+        function openEditModal(day) {
+            currentEditDay = day;
+            const text = localStorage.getItem(`joulu-text-${day}`) || `Joulun odotus!`;
+            
+            document.getElementById('editDay').textContent = day;
+            document.getElementById('dayText').value = text;
+            
+            const savedImage = localStorage.getItem(`joulu-image-${day}`);
+            if (savedImage) {
+                document.getElementById('genImg').src = savedImage;
+                currentGeneratedImage = savedImage;
+            } else {
+                // Generoi satunnainen kuva
+                const randomSeed = Math.floor(Math.random() * 10000) + (day * 100);
+                const imageUrl = `https://loremflickr.com/400/400/christmas,holiday,winter,festive?random=${randomSeed}`;
+                document.getElementById('genImg').src = imageUrl;
+                currentGeneratedImage = imageUrl;
+            }
+            
+            document.getElementById('editModal').classList.add('show');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').classList.remove('show');
+            currentEditDay = null;
+            currentGeneratedImage = null;
+        }
+
+        async function generateNewImage(button) {
+            button.disabled = true;
+            button.textContent = 'Generoidaan...';
+            
+            try {
+                const randomSeed = Math.floor(Math.random() * 10000) + (currentEditDay * 100) + Date.now();
+                const imageUrl = `https://loremflickr.com/400/400/christmas,holiday,winter,festive?random=${randomSeed}`;
+                
+                document.getElementById('genImg').src = imageUrl;
+                currentGeneratedImage = imageUrl;
+                
+                setTimeout(() => {
+                    button.textContent = 'Generoi uusi kuva';
+                    button.disabled = false;
+                }, 500);
+                
+            } catch (error) {
+                console.error('Kuvan generointi epäonnistui:', error);
+                button.textContent = 'Generoi uusi kuva';
+                button.disabled = false;
+                alert('Kuvan generointi epäonnistui. Yritä uudelleen.');
+            }
+        }
+
+        function generateImageForDay(day) {
+            const savedImage = localStorage.getItem(`joulu-image-${day}`);
+            
+            // Jos kuvaa ei ole vielä tallennettu, generoi se
+            if (!savedImage) {
+                const randomSeed = Math.floor(Math.random() * 10000) + (day * 100);
+                const imageUrl = `https://loremflickr.com/400/400/christmas,holiday,winter,festive?random=${randomSeed}`;
+                
+                const imgElement = document.getElementById(`img-${day}`);
+                imgElement.src = imageUrl;
+            }
+        }
+
+        function saveDayContent() {
+            if (!currentGeneratedImage) {
+                alert('Generoi ensin kuva!');
+                return;
+            }
+            
+            const text = document.getElementById('dayText').value;
+            
+            localStorage.setItem(`joulu-image-${currentEditDay}`, currentGeneratedImage);
+            localStorage.setItem(`joulu-text-${currentEditDay}`, text);
+            
+            document.getElementById(`img-${currentEditDay}`).src = currentGeneratedImage;
+            document.getElementById(`text-${currentEditDay}`).textContent = text;
+            
+            closeEditModal();
+            alert('Päivä tallennettu!');
+        }
+
+        function loadAllContent() {
+            for (let day = 1; day <= 24; day++) {
+                const imageUrl = localStorage.getItem(`joulu-image-${day}`);
+                const text = localStorage.getItem(`joulu-text-${day}`);
+                
+                if (imageUrl) {
+                    document.getElementById(`img-${day}`).src = imageUrl;
+                }
+                if (text) {
+                    document.getElementById(`text-${day}`).textContent = text;
+                }
+            }
+        }
+
+        // Sulje modaali kun klikataan tausta
+        window.addEventListener('click', function(event) {
+            const modal = document.getElementById('editModal');
+            if (event.target === modal) {
+                closeEditModal();
+            }
+        });
+
+        // Alusta kalenteri sivun latauksessa
+        document.addEventListener('DOMContentLoaded', initCalendar);
+    </script>
+</body>
+</html>
