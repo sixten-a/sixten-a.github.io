@@ -350,7 +350,7 @@
     <div class="modal" id="editModal">
         <div class="modal-content">
             <h2>Muokkaa päivää <span id="editDay">1</span></h2>
-            
+
             <div class="form-group">
                 <label>Joulumainen kuva:</label>
                 <div id="generatedImage" style="width: 100%; aspect-ratio: 1; background: #f0f0f0; border-radius: 8px; margin-bottom: 1rem; overflow: hidden;">
@@ -411,12 +411,12 @@
         // Alusta kalenteri
         function initCalendar() {
             const grid = document.getElementById('calendarGrid');
-            
+
             for (let day = 1; day <= 24; day++) {
                 const door = createDoor(day);
                 grid.appendChild(door);
             }
-            
+
             loadAllContent();
         }
 
@@ -424,9 +424,9 @@
             const doorEl = document.createElement('div');
             doorEl.className = 'door';
             doorEl.id = `door-${day}`;
-            
+
             const isAvailable = isDateAvailable(day);
-            
+
             doorEl.innerHTML = `
                 <div class="door-inner">
                     <div class="door-front ${!isAvailable ? 'locked' : ''}" onclick="handleDoorClick(${day}, event)">
@@ -444,7 +444,7 @@
                     </div>
                 </div>
             `;
-            
+
             return doorEl;
         }
 
@@ -457,19 +457,19 @@
 
         function handleDoorClick(day, event) {
             event.stopPropagation();
-            
+
             if (!isDateAvailable(day)) {
                 alert(`Tämä luukku avautuu 24.12.${new Date().getFullYear()} kun päivä on ${day}.12.!`);
                 return;
             }
-            
+
             const door = document.getElementById(`door-${day}`);
-            
+
             // Jos luukku ei ole vielä avattu, generoi kuva
             if (!door.classList.contains('opened')) {
                 generateImageForDay(day);
             }
-            
+
             door.classList.toggle('opened');
         }
 
@@ -481,10 +481,10 @@
         function openEditModal(day) {
             currentEditDay = day;
             const text = localStorage.getItem(`joulu-text-${day}`) || `Joulun odotus!`;
-            
+
             document.getElementById('editDay').textContent = day;
             document.getElementById('dayText').value = text;
-            
+
             const savedImage = localStorage.getItem(`joulu-image-${day}`);
             if (savedImage) {
                 document.getElementById('genImg').src = savedImage;
@@ -496,7 +496,7 @@
                 document.getElementById('genImg').src = imageUrl;
                 currentGeneratedImage = imageUrl;
             }
-            
+
             document.getElementById('editModal').classList.add('show');
         }
 
@@ -509,19 +509,19 @@
         async function generateNewImage(button) {
             button.disabled = true;
             button.textContent = 'Generoidaan...';
-            
+
             try {
                 const randomSeed = Math.floor(Math.random() * 10000) + (currentEditDay * 100) + Date.now();
                 const imageUrl = `https://loremflickr.com/400/400/christmas,holiday,winter,festive?random=${randomSeed}`;
-                
+
                 document.getElementById('genImg').src = imageUrl;
                 currentGeneratedImage = imageUrl;
-                
+
                 setTimeout(() => {
                     button.textContent = 'Generoi uusi kuva';
                     button.disabled = false;
                 }, 500);
-                
+
             } catch (error) {
                 console.error('Kuvan generointi epäonnistui:', error);
                 button.textContent = 'Generoi uusi kuva';
@@ -532,12 +532,12 @@
 
         function generateImageForDay(day) {
             const savedImage = localStorage.getItem(`joulu-image-${day}`);
-            
+
             // Jos kuvaa ei ole vielä tallennettu, generoi se
             if (!savedImage) {
                 const randomSeed = Math.floor(Math.random() * 10000) + (day * 100);
                 const imageUrl = `https://loremflickr.com/400/400/christmas,holiday,winter,festive?random=${randomSeed}`;
-                
+
                 const imgElement = document.getElementById(`img-${day}`);
                 imgElement.src = imageUrl;
             }
@@ -548,15 +548,15 @@
                 alert('Generoi ensin kuva!');
                 return;
             }
-            
+
             const text = document.getElementById('dayText').value;
-            
+
             localStorage.setItem(`joulu-image-${currentEditDay}`, currentGeneratedImage);
             localStorage.setItem(`joulu-text-${currentEditDay}`, text);
-            
+
             document.getElementById(`img-${currentEditDay}`).src = currentGeneratedImage;
             document.getElementById(`text-${currentEditDay}`).textContent = text;
-            
+
             closeEditModal();
             alert('Päivä tallennettu!');
         }
@@ -565,7 +565,7 @@
             for (let day = 1; day <= 24; day++) {
                 const imageUrl = localStorage.getItem(`joulu-image-${day}`);
                 const text = localStorage.getItem(`joulu-text-${day}`);
-                
+
                 if (imageUrl) {
                     document.getElementById(`img-${day}`).src = imageUrl;
                 }
