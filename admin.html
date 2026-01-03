@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin-paneeli</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 2rem;
+        }
+
+        .back-link, .logout-admin {
+            padding: 0.75rem 1.5rem;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            text-decoration: none;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .back-link:hover, .logout-admin:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .admin-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .admin-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .admin-card h2 {
+            color: #667eea;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .feedback-list {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .feedback-item {
+            background: #f7fafc;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .feedback-item h3 {
+            color: #667eea;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .feedback-meta {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .feedback-badge {
+            display: inline-block;
+            background: #e6fffa;
+            color: #234e52;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+
+        .feedback-message {
+            color: #333;
+            line-height: 1.5;
+            margin-bottom: 0.5rem;
+            white-space: pre-wrap;
+        }
+
+        .feedback-time {
+            color: #999;
+            font-size: 0.85rem;
+        }
+
+        .no-feedback {
+            text-align: center;
+            color: #999;
+            padding: 2rem;
+            font-style: italic;
+        }
+
+        .reset-section {
+            background: #fff5f5;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 2px solid #fed7d7;
+        }
+
+        .reset-section h3 {
+            color: #c53030;
+            margin-bottom: 1rem;
+        }
+
+        .reset-warning {
+            background: #fffaf0;
+            color: #7c2d12;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            border-left: 4px solid #ed8936;
+        }
+
+        .reset-button {
+            background: #c53030;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.2s;
+            width: 100%;
+        }
+
+        .reset-button:hover {
+            background: #9b2c2c;
+        }
+
+        .export-button {
+            background: #3182ce;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.2s;
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+
+        .export-button:hover {
+            background: #2c5aa0;
+        }
+
+        .clear-feedback-button {
+            background: #ed8936;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.2s;
+            width: 100%;
+        }
+
+        .clear-feedback-button:hover {
+            background: #dd6b20;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat {
+            background: #edf2f7;
+            padding: 1rem;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .admin-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+
+        .scroll-hint {
+            text-align: center;
+            color: #999;
+            font-size: 0.85rem;
+            padding: 0.5rem;
+            border-top: 1px solid #e2e8f0;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 Admin-paneeli</h1>
+            <div>
+                <a href="index.html" class="back-link">← Takaisin etusivulle</a>
+            </div>
+        </div>
+
+        <div id="adminContent">
+            <p style="color: white; text-align: center;">Ladataan...</p>
+        </div>
+    </div>
+
+    <script>
+        const VALID_USERNAME = "Sixten-a";
+        const VALID_PASSWORD = "haraldous67";
+
+        function checkAccess() {
+            const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+            
+            if (!isLoggedIn) {
+                showLoginPrompt();
+                return false;
+            }
+            return true;
+        }
+
+        function showLoginPrompt() {
+            const username = prompt("Käyttäjänimi:");
+            if (!username) {
+                window.location.href = "index.html";
+                return;
+            }
+
+            const password = prompt("Salasana:");
+            if (!password) {
+                window.location.href = "index.html";
+                return;
+            }
+
+            if (username === VALID_USERNAME && password === VALID_PASSWORD) {
+                localStorage.setItem("isLoggedIn", "true");
+                loadAdminPanel();
+            } else {
+                alert("Väärä käyttäjänimi tai salasana!");
+                window.location.href = "index.html";
+            }
+        }
+
+        function loadAdminPanel() {
+            const allFeedback = JSON.parse(localStorage.getItem("allFeedback") || "[]");
+            const adminContent = document.getElementById("adminContent");
+
+            let feedbackHTML = '';
+            if (allFeedback.length === 0) {
+                feedbackHTML = '<div class="no-feedback">Ei vielä palautetta 📭</div>';
+            } else {
+                feedbackHTML = allFeedback.map((feedback, index) => `
+                    <div class="feedback-item">
+                        <h3>Palaute #${allFeedback.length - index}</h3>
+                        <div class="feedback-meta">
+                            <span class="feedback-badge">📌 ${feedback.type}</span>
+                            <span class="feedback-badge">🎯 ${feedback.app || 'Yleinen'}</span>
+                        </div>
+                        <div class="feedback-message">${escapeHtml(feedback.message)}</div>
+                        <div class="feedback-time">
+                            ${feedback.email ? `📧 ${feedback.email} | ` : ''}⏰ ${feedback.timestamp}
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            adminContent.innerHTML = `
+                <div class="admin-grid">
+                    <div class="admin-card">
+                        <h2>💬 Palautteet</h2>
+                        <div class="stats">
+                            <div class="stat">
+                                <div class="stat-number">${allFeedback.length}</div>
+                                <div class="stat-label">Palautteita yhteensä</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-number">${countFeedbackByType(allFeedback, 'bug')}</div>
+                                <div class="stat-label">Virheraportteja</div>
+                            </div>
+                        </div>
+                        <button class="export-button" onclick="exportFeedback()">📥 Lataa palautteeksi</button>
+                        <button class="clear-feedback-button" onclick="clearAllFeedback()">🗑️ Poista kaikki palautteet</button>
+                        <div class="feedback-list">
+                            ${feedbackHTML}
+                        </div>
+                        ${allFeedback.length > 0 ? '<div class="scroll-hint">Selaa palautteita ⬆️⬇️</div>' : ''}
+                    </div>
+
+                    <div class="admin-card">
+                        <h2>⚙️ Hallinta</h2>
+                        <div class="reset-section">
+                            <h3>🔄 Resetoi nettisivu</h3>
+                            <div class="reset-warning">
+                                <strong>⚠️ Varoitus!</strong><br>
+                                Tämä poistaa kaikki muokkaukset ja palauttaa sivun alkuperäiseen tilaan.
+                            </div>
+                            <button class="reset-button" onclick="resetWebsite()">Resetoi sivun muokkaukset</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function countFeedbackByType(feedbackArray, type) {
+            return feedbackArray.filter(f => f.type === type).length;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function exportFeedback() {
+            const allFeedback = JSON.parse(localStorage.getItem("allFeedback") || "[]");
+            const json = JSON.stringify(allFeedback, null, 2);
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `palautteet-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function clearAllFeedback() {
+            if (confirm("Oletko varma? Kaikki palautteet poistetaan.")) {
+                localStorage.removeItem("allFeedback");
+                alert("Kaikki palautteet poistettu!");
+                loadAdminPanel();
+            }
+        }
+
+        function resetWebsite() {
+            if (confirm("Oletko VARMA? Kaikki muokkaukset poistetaan ja sivu palautetaan alkuperäiseen tilaan!")) {
+                localStorage.removeItem("siteTitle");
+                localStorage.removeItem("backgroundColor");
+                localStorage.removeItem("backgroundUrl");
+                alert("Nettisivu resetoitu! Sivu latautuu uudelleen...");
+                window.location.href = "index.html";
+            }
+        }
+
+        // Tarkista pääsy sivun latauksessa
+        document.addEventListener("DOMContentLoaded", function() {
+            if (checkAccess()) {
+                loadAdminPanel();
+            }
+        });
+    </script>
+</body>
+</html>

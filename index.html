@@ -374,12 +374,193 @@
         .btn-cancel-edit:hover {
             background: #cbd5e0;
         }
+
+        .feedback-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 0.75rem 1.5rem;
+            background: #f6ad55;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s;
+            z-index: 99;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .feedback-btn:hover {
+            background: #ed8936;
+            transform: scale(1.05);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .feedback-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 500;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .feedback-modal.show {
+            display: flex;
+        }
+
+        .feedback-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .feedback-content h2 {
+            color: #f6ad55;
+            margin-top: 0;
+            margin-bottom: 1.5rem;
+        }
+
+        .feedback-form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .feedback-form-group label {
+            display: block;
+            color: #333;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        .feedback-form-group input,
+        .feedback-form-group select,
+        .feedback-form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+
+        .feedback-form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .feedback-form-group input:focus,
+        .feedback-form-group select:focus,
+        .feedback-form-group textarea:focus {
+            outline: none;
+            border-color: #f6ad55;
+            box-shadow: 0 0 0 3px rgba(246, 173, 85, 0.1);
+        }
+
+        .feedback-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .feedback-buttons button {
+            flex: 1;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-send {
+            background: #f6ad55;
+            color: white;
+        }
+
+        .btn-send:hover {
+            background: #ed8936;
+        }
+
+        .btn-close-feedback {
+            background: #e2e8f0;
+            color: #333;
+        }
+
+        .btn-close-feedback:hover {
+            background: #cbd5e0;
+        }
     </style>
 </head>
 <body>
     <body>
     <button class="login-btn" id="loginBtn" onclick="openLoginModal()">Kirjaudu</button>
     <button class="logout-btn" id="logoutBtn" onclick="handleLogout()">Kirjaudu ulos</button>
+    <button class="feedback-btn" onclick="openFeedbackModal()">💬 Anna palautetta</button>
+
+    <!-- Feedback Modal -->
+    <div class="feedback-modal" id="feedbackModal">
+        <div class="feedback-content">
+            <h2>📝 Anna palautetta</h2>
+            <form onsubmit="submitFeedback(event)">
+                <div class="feedback-form-group">
+                    <label for="feedbackType">Aihe:</label>
+                    <select id="feedbackType" required>
+                        <option value="">-- Valitse aihe --</option>
+                        <option value="bug">🐛 Virhe/ongelma</option>
+                        <option value="feature">✨ Uusi ominaisuus</option>
+                        <option value="improvement">⚡ Parannusehdotus</option>
+                        <option value="other">💭 Muu palaute</option>
+                    </select>
+                </div>
+
+                <div class="feedback-form-group">
+                    <label for="feedbackApp">Koskee (valinnai):</label>
+                    <select id="feedbackApp">
+                        <option value="">-- Valitse sovellus --</option>
+                        <option value="general">Yleinen</option>
+                        <option value="kauppa">Kauppa</option>
+                        <option value="kassakone">Kassakone</option>
+                        <option value="laskin">Laskin</option>
+                        <option value="ristinolla">Ristinolla</option>
+                        <option value="ajastin">Ajastin</option>
+                        <option value="piirrustus">Piirrustussovellus</option>
+                        <option value="muistiinpanot">Muistiinpanot</option>
+                        <option value="video">Videot</option>
+                        <option value="emoji">Emoji-peli</option>
+                    </select>
+                </div>
+
+                <div class="feedback-form-group">
+                    <label for="feedbackEmail">Sähköposti (valinnai):</label>
+                    <input type="email" id="feedbackEmail" placeholder="nimi@esimerkki.fi">
+                </div>
+
+                <div class="feedback-form-group">
+                    <label for="feedbackText">Viesti:</label>
+                    <textarea id="feedbackText" placeholder="Kerro mitä mieltä olet..." required></textarea>
+                </div>
+
+                <div class="feedback-buttons">
+                    <button type="submit" class="btn-send">Lähetä palaute</button>
+                    <button type="button" class="btn-close-feedback" onclick="closeFeedbackModal()">Peruuta</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <div class="admin-panel" id="adminPanel">
         <h3>Muokkaa sivua</h3>
@@ -406,6 +587,11 @@
             <div class="edit-actions">
                 <button class="btn-save" onclick="saveBackgroundUrl()">Tallenna</button>
             </div>
+        </div>
+
+        <div class="edit-section" style="border-bottom: none; margin-top: 2rem; padding-top: 1.5rem; border-top: 2px solid #fed7d7;">
+            <a href="admin.html" style="display: block; background: #3182ce; color: white; padding: 0.75rem; border-radius: 0.5rem; text-decoration: none; text-align: center; cursor: pointer; font-size: 0.9rem; margin-bottom: 0.75rem;">📊 Admin-paneeli</a>
+            <button style="background: #c53030; color: white; width: 100%; padding: 0.75rem; border: none; border-radius: 0.5rem; cursor: pointer; font-size: 0.9rem;" onclick="resetSiteFromAdmin()">🔄 Resetoi sivun muokkaukset</button>
         </div>
     </div>
 
@@ -619,13 +805,65 @@
             }
         }
 
+        function resetSiteFromAdmin() {
+            if (confirm("Oletko VARMA? Kaikki muokkaukset poistetaan!")) {
+                localStorage.removeItem("siteTitle");
+                localStorage.removeItem("backgroundColor");
+                localStorage.removeItem("backgroundUrl");
+                alert("Sivun muokkaukset resetoitu! Sivu latautuu uudelleen...");
+                location.reload();
+            }
+        }
+
         // Sulje modaali kun klikataan tausta
         window.addEventListener("click", function(event) {
             const modal = document.getElementById("loginModal");
             if (event.target === modal) {
                 closeLoginModal();
             }
+            const feedbackModal = document.getElementById("feedbackModal");
+            if (event.target === feedbackModal) {
+                closeFeedbackModal();
+            }
         });
+
+        // Feedback-funktiot
+        function openFeedbackModal() {
+            document.getElementById("feedbackModal").classList.add("show");
+        }
+
+        function closeFeedbackModal() {
+            document.getElementById("feedbackModal").classList.remove("show");
+            document.getElementById("feedbackType").value = "";
+            document.getElementById("feedbackApp").value = "";
+            document.getElementById("feedbackEmail").value = "";
+            document.getElementById("feedbackText").value = "";
+        }
+
+        function submitFeedback(event) {
+            event.preventDefault();
+
+            const feedbackType = document.getElementById("feedbackType").value;
+            const feedbackApp = document.getElementById("feedbackApp").value;
+            const feedbackEmail = document.getElementById("feedbackEmail").value;
+            const feedbackText = document.getElementById("feedbackText").value;
+
+            // Tallenna palaute localStorage:hen
+            const feedbackData = {
+                type: feedbackType,
+                app: feedbackApp,
+                email: feedbackEmail,
+                message: feedbackText,
+                timestamp: new Date().toLocaleString("fi-FI")
+            };
+
+            let allFeedback = JSON.parse(localStorage.getItem("allFeedback") || "[]");
+            allFeedback.push(feedbackData);
+            localStorage.setItem("allFeedback", JSON.stringify(allFeedback));
+
+            alert("Kiitos palautteesta! 😊\n\nPalaute tallennettu onnistuneesti.");
+            closeFeedbackModal();
+        }
     </script>
 </body>
 </html>
