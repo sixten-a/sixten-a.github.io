@@ -263,7 +263,7 @@
 
         function checkAccess() {
             const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
-            
+
             if (!isLoggedIn) {
                 showLoginPrompt();
                 return false;
