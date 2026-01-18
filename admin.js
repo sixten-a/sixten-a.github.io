@@ -1,7 +1,5 @@
 // Admin logic for Sixun sovellukset
-const VALID_USERNAME = "Sixten-a";
-// Note: We use Supabase Auth for actual verification, 
-// but we'll keep the UI flow similar.
+// Note: We use Supabase Auth for actual verification.
 
 async function handleLogin(event) {
     event.preventDefault();
@@ -82,6 +80,65 @@ async function resetSiteFromAdmin() {
     }
 }
 
+// Feedback management functions
+async function loadFeedback() {
+    const { data, error } = await window.supabaseClient
+        .from('feedback')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error("Virhe palautteiden latauksessa:", error);
+        return [];
+    }
+    return data;
+}
+
+async function markAsRead(id, isRead) {
+    const { error } = await window.supabaseClient
+        .from('feedback')
+        .update({ is_read: isRead, updated_at: new Date().toISOString() })
+        .eq('id', id);
+
+    if (error) {
+        alert("Virhe tilan päivityksessä: " + error.message);
+        return false;
+    }
+    return true;
+}
+
+async function deleteFeedback(id) {
+    if (!confirm("Haluatko varmasti poistaa tämän palautteen?")) return false;
+
+    const { error } = await window.supabaseClient
+        .from('feedback')
+        .delete()
+        .eq('id', id);
+
+    if (error) {
+        alert("Virhe poistettaessa: " + error.message);
+        return false;
+    }
+    return true;
+}
+
+async function clearAllFeedback() {
+    if (!confirm("Oletko VARMA? Kaikki palautteet poistetaan pysyvästi Supabasesta!")) return;
+
+    // Supabase delete requires a filter, we use a filter that matches everything
+    const { error } = await window.supabaseClient
+        .from('feedback')
+        .delete()
+        .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all
+
+    if (error) {
+        alert("Virhe tyhjennettäessä: " + error.message);
+    } else {
+        alert("Kaikki palautteet poistettu!");
+        if (typeof renderFeedback === 'function') renderFeedback();
+    }
+}
+
 // Global functions for UI
 window.handleLogin = handleLogin;
 window.handleLogout = handleLogout;
@@ -89,3 +146,7 @@ window.saveTitle = saveTitle;
 window.saveBackgroundColor = saveBackgroundColor;
 window.saveBackgroundUrl = saveBackgroundUrl;
 window.resetSiteFromAdmin = resetSiteFromAdmin;
+window.loadFeedback = loadFeedback;
+window.markAsRead = markAsRead;
+window.deleteFeedback = deleteFeedback;
+window.clearAllFeedback = clearAllFeedback;
