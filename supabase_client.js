@@ -3,6 +3,5 @@
 const supabaseUrl = document.querySelector('meta[name="supabase-url"]').content;
 const supabaseKey = document.querySelector('meta[name="supabase-key"]').content;
 
-const supabase = supabasejs.createClient(supabaseUrl, supabaseKey);
-
-window.supabaseClient = supabase;
+const client = supabase.createClient(supabaseUrl, supabaseKey);
+window.supabaseClient = client;
