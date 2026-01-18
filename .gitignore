@@ -1,2 +1,6 @@
 
 .DS_Store
+.env
+supabase-secret
+index_backup.html
+supabase-cli

@@ -1,9 +1,14 @@
 <!DOCTYPE html>
 <html lang="fi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sixun sovellukset</title>
+    <!-- Supabase Config -->
+    <meta name="supabase-url" content="https://hcpidtcpvsmtpbsxlbeb.supabase.co">
+    <meta name="supabase-key" content="sb_publishable_wlUdE1e3XpHFD8bb6qPZfQ_iRwgv2ra">
+
     <style>
         body {
             margin: 0;
@@ -15,6 +20,7 @@
             background: linear-gradient(135deg, #0d5f2c 0%, #1a8c3d 25%, #c41e3a 50%, #8b0000 75%, #0d5f2c 100%);
             position: relative;
             overflow-x: hidden;
+            transition: background 0.5s ease;
         }
 
         body::before {
@@ -60,9 +66,10 @@
 
         .app-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            max-width: 800px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            max-width: 900px;
+            width: 100%;
             margin: 0 auto;
         }
 
@@ -90,12 +97,10 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(
-                90deg,
-                rgba(255,255,255,0) 0%,
-                rgba(255,255,255,0.2) 50%,
-                rgba(255,255,255,0) 100%
-            );
+            background: linear-gradient(90deg,
+                    rgba(255, 255, 255, 0) 0%,
+                    rgba(255, 255, 255, 0.2) 50%,
+                    rgba(255, 255, 255, 0) 100%);
             transition: left 0.5s;
         }
 
@@ -104,14 +109,27 @@
         }
 
         @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+            }
         }
 
         .logo {
@@ -130,17 +148,17 @@
 
         .login-btn {
             position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 0.75rem 1.5rem;
+            top: 15px;
+            right: 15px;
+            padding: 0.6rem 1.2rem;
             background: #4299e1;
             color: white;
             border: none;
             border-radius: 0.5rem;
-            font-size: 1rem;
+            font-size: 0.9rem;
             cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            transition: background 0.2s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            transition: all 0.2s;
             z-index: 100;
         }
 
@@ -199,12 +217,6 @@
             box-sizing: border-box;
         }
 
-        .form-group input:focus {
-            outline: none;
-            border-color: #4299e1;
-            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
-        }
-
         .modal-buttons {
             display: flex;
             gap: 1rem;
@@ -217,7 +229,6 @@
             border-radius: 0.5rem;
             font-size: 1rem;
             cursor: pointer;
-            transition: background 0.2s;
         }
 
         .btn-login {
@@ -225,17 +236,9 @@
             color: white;
         }
 
-        .btn-login:hover {
-            background: #2b6cb0;
-        }
-
         .btn-cancel {
             background: #e2e8f0;
             color: #2d3748;
-        }
-
-        .btn-cancel:hover {
-            background: #cbd5e0;
         }
 
         .error-message {
@@ -270,24 +273,17 @@
             display: block;
         }
 
-        .admin-panel h3 {
-            color: #2d3748;
-            margin-top: 0;
-        }
-
         .logout-btn {
             position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 0.75rem 1.5rem;
+            top: 15px;
+            right: 15px;
+            padding: 0.6rem 1.2rem;
             background: #f56565;
             color: white;
             border: none;
             border-radius: 0.5rem;
-            font-size: 1rem;
+            font-size: 0.9rem;
             cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            transition: background 0.2s;
             z-index: 100;
             display: none;
         }
@@ -296,83 +292,37 @@
             display: block;
         }
 
-        .logout-btn:hover {
-            background: #e53e3e;
-        }
-
         .edit-section {
             margin-bottom: 1.5rem;
             padding-bottom: 1.5rem;
             border-bottom: 1px solid #e2e8f0;
         }
 
-        .edit-section:last-child {
-            border-bottom: none;
-        }
-
         .edit-section label {
             display: block;
             color: #2d3748;
             margin-bottom: 0.5rem;
-            font-weight: 500;
             font-size: 0.9rem;
+            font-weight: 500;
         }
 
-        .edit-section input,
-        .edit-section textarea {
+        .edit-section input {
             width: 100%;
             padding: 0.5rem;
             border: 1px solid #cbd5e0;
             border-radius: 0.5rem;
-            font-size: 0.9rem;
             box-sizing: border-box;
-            font-family: inherit;
-        }
-
-        .edit-section textarea {
-            resize: vertical;
-            min-height: 60px;
-        }
-
-        .edit-section input:focus,
-        .edit-section textarea:focus {
-            outline: none;
-            border-color: #4299e1;
-            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
-        }
-
-        .edit-actions {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 0.5rem;
-        }
-
-        .edit-actions button {
-            flex: 1;
-            padding: 0.5rem;
-            border: none;
-            border-radius: 0.5rem;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: background 0.2s;
         }
 
         .btn-save {
             background: #48bb78;
             color: white;
-        }
-
-        .btn-save:hover {
-            background: #38a169;
-        }
-
-        .btn-cancel-edit {
-            background: #e2e8f0;
-            color: #2d3748;
-        }
-
-        .btn-cancel-edit:hover {
-            background: #cbd5e0;
+            width: 100%;
+            border: none;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            margin-top: 0.5rem;
+            cursor: pointer;
         }
 
         .feedback-btn {
@@ -387,17 +337,10 @@
             font-size: 1rem;
             cursor: pointer;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            transition: all 0.3s;
             z-index: 99;
             display: flex;
             align-items: center;
             gap: 0.5rem;
-        }
-
-        .feedback-btn:hover {
-            background: #ed8936;
-            transform: scale(1.05);
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
         }
 
         .feedback-modal {
@@ -421,104 +364,43 @@
             background: white;
             padding: 2rem;
             border-radius: 10px;
-            max-width: 500px;
             width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
         }
 
-        .feedback-content h2 {
-            color: #f6ad55;
-            margin-top: 0;
-            margin-bottom: 1.5rem;
-        }
+        @media (max-width: 640px) {
+            .container {
+                padding: 1rem;
+                margin-top: 4rem;
+            }
 
-        .feedback-form-group {
-            margin-bottom: 1.5rem;
-        }
+            .app-grid {
+                grid-template-columns: 1fr;
+            }
 
-        .feedback-form-group label {
-            display: block;
-            color: #333;
-            margin-bottom: 0.5rem;
-            font-weight: bold;
-        }
-
-        .feedback-form-group input,
-        .feedback-form-group select,
-        .feedback-form-group textarea {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 1rem;
-            box-sizing: border-box;
-            font-family: inherit;
-        }
-
-        .feedback-form-group textarea {
-            resize: vertical;
-            min-height: 120px;
-        }
-
-        .feedback-form-group input:focus,
-        .feedback-form-group select:focus,
-        .feedback-form-group textarea:focus {
-            outline: none;
-            border-color: #f6ad55;
-            box-shadow: 0 0 0 3px rgba(246, 173, 85, 0.1);
-        }
-
-        .feedback-buttons {
-            display: flex;
-            gap: 1rem;
-            margin-top: 2rem;
-        }
-
-        .feedback-buttons button {
-            flex: 1;
-            padding: 0.75rem;
-            border: none;
-            border-radius: 5px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .btn-send {
-            background: #f6ad55;
-            color: white;
-        }
-
-        .btn-send:hover {
-            background: #ed8936;
-        }
-
-        .btn-close-feedback {
-            background: #e2e8f0;
-            color: #333;
-        }
-
-        .btn-close-feedback:hover {
-            background: #cbd5e0;
+            .admin-panel {
+                top: 60px;
+                right: 10px;
+                left: 10px;
+                max-width: none;
+            }
         }
     </style>
 </head>
+
 <body>
-    <body>
     <button class="login-btn" id="loginBtn" onclick="openLoginModal()">Kirjaudu</button>
     <button class="logout-btn" id="logoutBtn" onclick="handleLogout()">Kirjaudu ulos</button>
     <button class="feedback-btn" onclick="openFeedbackModal()">💬 Anna palautetta</button>
 
-    <!-- Feedback Modal -->
     <div class="feedback-modal" id="feedbackModal">
         <div class="feedback-content">
             <h2>📝 Anna palautetta</h2>
             <form onsubmit="submitFeedback(event)">
-                <div class="feedback-form-group">
+                <div class="form-group">
                     <label for="feedbackType">Aihe:</label>
-                    <select id="feedbackType" required>
+                    <select id="feedbackType"
+                        style="width:100%; padding:0.75rem; border-radius:0.5rem; border:1px solid #ddd;" required>
                         <option value="">-- Valitse aihe --</option>
                         <option value="bug">🐛 Virhe/ongelma</option>
                         <option value="feature">✨ Uusi ominaisuus</option>
@@ -526,37 +408,19 @@
                         <option value="other">💭 Muu palaute</option>
                     </select>
                 </div>
-
-                <div class="feedback-form-group">
-                    <label for="feedbackApp">Koskee (valinnai):</label>
-                    <select id="feedbackApp">
-                        <option value="">-- Valitse sovellus --</option>
-                        <option value="general">Yleinen</option>
-                        <option value="kauppa">Kauppa</option>
-                        <option value="kassakone">Kassakone</option>
-                        <option value="laskin">Laskin</option>
-                        <option value="ristinolla">Ristinolla</option>
-                        <option value="ajastin">Ajastin</option>
-                        <option value="piirrustus">Piirrustussovellus</option>
-                        <option value="muistiinpanot">Muistiinpanot</option>
-                        <option value="video">Videot</option>
-                        <option value="emoji">Emoji-peli</option>
-                    </select>
-                </div>
-
-                <div class="feedback-form-group">
-                    <label for="feedbackEmail">Sähköposti (valinnai):</label>
+                <div class="form-group">
+                    <label for="feedbackEmail">Sähköposti (valinnainen):</label>
                     <input type="email" id="feedbackEmail" placeholder="nimi@esimerkki.fi">
                 </div>
-
-                <div class="feedback-form-group">
+                <div class="form-group">
                     <label for="feedbackText">Viesti:</label>
-                    <textarea id="feedbackText" placeholder="Kerro mitä mieltä olet..." required></textarea>
+                    <textarea id="feedbackText"
+                        style="width:100%; min-height:100px; padding:0.75rem; border-radius:0.5rem; border:1px solid #ddd;"
+                        required></textarea>
                 </div>
-
-                <div class="feedback-buttons">
-                    <button type="submit" class="btn-send">Lähetä palaute</button>
-                    <button type="button" class="btn-close-feedback" onclick="closeFeedbackModal()">Peruuta</button>
+                <div class="modal-buttons">
+                    <button type="submit" class="btn-login" style="background:#f6ad55">Lähetä</button>
+                    <button type="button" class="btn-cancel" onclick="closeFeedbackModal()">Peruuta</button>
                 </div>
             </form>
         </div>
@@ -564,45 +428,36 @@
 
     <div class="admin-panel" id="adminPanel">
         <h3>Muokkaa sivua</h3>
-
         <div class="edit-section">
             <label for="editTitle">Pääotsikko:</label>
-            <input type="text" id="editTitle" placeholder="Sixun sovellukset">
-            <div class="edit-actions">
-                <button class="btn-save" onclick="saveTitle()">Tallenna</button>
-            </div>
+            <input type="text" id="editTitle">
+            <button class="btn-save" onclick="saveTitle()">Tallenna</button>
         </div>
-
         <div class="edit-section">
-            <label for="editBackgroundColor">Taustaksi</label>
+            <label for="editBackgroundColor">Taustaväri:</label>
             <input type="color" id="editBackgroundColor">
-            <div class="edit-actions">
-                <button class="btn-save" onclick="saveBackgroundColor()">Tallenna</button>
-            </div>
+            <button class="btn-save" onclick="saveBackgroundColor()">Tallenna</button>
         </div>
-
         <div class="edit-section">
-            <label for="editBackgroundUrl">Tausta-URL (valinnainen):</label>
-            <input type="text" id="editBackgroundUrl" placeholder="https://...">
-            <div class="edit-actions">
-                <button class="btn-save" onclick="saveBackgroundUrl()">Tallenna</button>
-            </div>
+            <label for="editBackgroundUrl">Tausta-URL:</label>
+            <input type="text" id="editBackgroundUrl">
+            <button class="btn-save" onclick="saveBackgroundUrl()">Tallenna</button>
         </div>
-
-        <div class="edit-section" style="border-bottom: none; margin-top: 2rem; padding-top: 1.5rem; border-top: 2px solid #fed7d7;">
-            <a href="admin.html" style="display: block; background: #3182ce; color: white; padding: 0.75rem; border-radius: 0.5rem; text-decoration: none; text-align: center; cursor: pointer; font-size: 0.9rem; margin-bottom: 0.75rem;">📊 Admin-paneeli</a>
-            <button style="background: #c53030; color: white; width: 100%; padding: 0.75rem; border: none; border-radius: 0.5rem; cursor: pointer; font-size: 0.9rem;" onclick="resetSiteFromAdmin()">🔄 Resetoi sivun muokkaukset</button>
+        <div class="edit-section" style="border:none">
+            <button
+                style="background:#c53030; color:white; width:100%; padding:0.75rem; border:none; border-radius:0.5rem; cursor:pointer;"
+                onclick="resetSiteFromAdmin()">🔄 Resetoi oletukset</button>
         </div>
     </div>
 
     <div class="modal" id="loginModal">
         <div class="modal-content">
-            <h2>Kauppias-kirjautuminen</h2>
-            <div class="error-message" id="errorMessage">Väärä käyttäjänimi tai salasana!</div>
+            <h2>Kirjaudu sisään</h2>
+            <div class="error-message" id="errorMessage"></div>
             <form onsubmit="handleLogin(event)">
                 <div class="form-group">
-                    <label for="username">Käyttäjänimi:</label>
-                    <input type="text" id="username" required>
+                    <label for="username">Sähköposti:</label>
+                    <input type="email" id="username" required>
                 </div>
                 <div class="form-group">
                     <label for="password">Salasana:</label>
@@ -618,252 +473,148 @@
 
     <div class="container">
         <svg class="logo" viewBox="0 0 100 100">
-            <circle cx="50" cy="50" r="45" fill="none" stroke="#4a5568" stroke-width="2"/>
+            <circle cx="50" cy="50" r="45" fill="none" stroke="#4a5568" stroke-width="2" />
             <g class="gear" transform="translate(50,50)">
-                <path fill="#4a5568" d="M-20,0 L20,0 L23,7 L-23,7 Z"/>
-                <path fill="#4a5568" d="M-20,0 L20,0 L23,-7 L-23,-7 Z" transform="rotate(60)"/>
-                <path fill="#4a5568" d="M-20,0 L20,0 L23,7 L-23,7 Z" transform="rotate(120)"/>
+                <path fill="#4a5568" d="M-20,0 L20,0 L23,7 L-23,7 Z" />
+                <path fill="#4a5568" d="M-20,0 L20,0 L23,-7 L-23,-7 Z" transform="rotate(60)" />
+                <path fill="#4a5568" d="M-20,0 L20,0 L23,7 L-23,7 Z" transform="rotate(120)" />
             </g>
-            <circle class="star" cx="50" cy="50" r="10" fill="#4299e1"/>
+            <circle class="star" cx="50" cy="50" r="10" fill="#4299e1" />
         </svg>
 
-        <h1>Sixun sovellukset</h1>
+        <h1 id="mainTitle">Sixun sovellukset</h1>
 
         <div class="app-grid">
             <a href="emoji-finder/" class="app-link">
                 <h2>🔍 😊 🎯 🎉 ✨</h2>
                 <p>Etsi emojeja pelistä!</p>
             </a>
-
             <a href="kauppa/" class="app-link">
                 <h2>Kauppa</h2>
                 <p>Katso tuotteita</p>
             </a>
-
             <a href="kassakone.html" class="app-link">
                 <h2>Kassakone</h2>
                 <p>Helppo kassakone</p>
             </a>
-
             <a href="laskin.html" class="app-link">
                 <h2>Laskin</h2>
                 <p>Laske laskuja</p>
             </a>
-
             <a href="ristinolla.html" class="app-link">
                 <h2>Ristinolla</h2>
                 <p>Pelaa klassista peliä</p>
             </a>
-
             <a href="ajastin.html" class="app-link">
                 <h2>Ajastin</h2>
                 <p>Seuraa aikaa tarkasti</p>
             </a>
-
             <a href="piirrustus.html" class="app-link">
                 <h2>Piirrustussovellus</h2>
                 <p>Piirrä juttuja selaimella.</p>
             </a>
-
             <a href="muistiinpanot.html" class="app-link">
                 <h2>Muistiinpanot</h2>
                 <p>Kirjoita muistiinpanoja.</p>
             </a>
-
             <a href="video-player.html" class="app-link">
                 <h2>Videot</h2>
                 <p>Katso videoita.</p>
             </a>
-
-            <a href="https://luxury-piroshki-cdb9fa.netlify.app/" class="app-link">
-                <h2>Chat</h2>
-                <p>Saattaa toimia tai olla rikki..</p>
-            </a>
-
         </div>
     </div>
 
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase_client.js"></script>
+    <script src="admin.js"></script>
     <script>
-        const VALID_USERNAME = "Sixten-a";
-        const VALID_PASSWORD = "haraldous67";
-        let isLoggedIn = false;
-
-        // Lataa tallennetut muutokset sivun latauksessa
-        window.addEventListener("DOMContentLoaded", function() {
-            loadSavedChanges();
-        });
-
-        function openLoginModal() {
-            document.getElementById("loginModal").classList.add("show");
-            document.getElementById("errorMessage").classList.remove("show");
-            document.getElementById("username").value = "";
-            document.getElementById("password").value = "";
-        }
-
-        function closeLoginModal() {
-            document.getElementById("loginModal").classList.remove("show");
-            document.getElementById("errorMessage").classList.remove("show");
-        }
-
-        function handleLogin(event) {
-            event.preventDefault();
-
-            const username = document.getElementById("username").value;
-            const password = document.getElementById("password").value;
-
-            if (username === VALID_USERNAME && password === VALID_PASSWORD) {
-                isLoggedIn = true;
-                localStorage.setItem("isLoggedIn", "true");
-                closeLoginModal();
-                updateUIForLoggedIn();
-                loadCurrentValues();
-                alert("Tervetuloa, " + username + "! Voit nyt muokata sivua.");
-            } else {
-                document.getElementById("errorMessage").classList.add("show");
-            }
-        }
-
-        function handleLogout() {
-            isLoggedIn = false;
-            localStorage.removeItem("isLoggedIn");
-            updateUIForLoggedOut();
-            alert("Olet kirjautunut ulos.");
-        }
+        // UI Helpers
+        function openLoginModal() { document.getElementById("loginModal").classList.add("show"); }
+        function closeLoginModal() { document.getElementById("loginModal").classList.remove("show"); }
+        function openFeedbackModal() { document.getElementById("feedbackModal").classList.add("show"); }
+        function closeFeedbackModal() { document.getElementById("feedbackModal").classList.remove("show"); }
 
         function updateUIForLoggedIn() {
             document.getElementById("loginBtn").style.display = "none";
-            document.getElementById("logoutBtn").classList.add("show");
+            document.getElementById("logoutBtn").style.display = "block";
             document.getElementById("adminPanel").classList.add("show");
         }
 
         function updateUIForLoggedOut() {
             document.getElementById("loginBtn").style.display = "block";
-            document.getElementById("logoutBtn").classList.remove("show");
+            document.getElementById("logoutBtn").style.display = "none";
             document.getElementById("adminPanel").classList.remove("show");
         }
 
-        function loadCurrentValues() {
-            const title = document.querySelector("h1").textContent;
-            document.getElementById("editTitle").value = title;
-        }
-
-        function saveTitle() {
-            const newTitle = document.getElementById("editTitle").value;
-            if (newTitle.trim()) {
-                document.querySelector("h1").textContent = newTitle;
-                localStorage.setItem("siteTitle", newTitle);
-                alert("Otsikko tallennettu!");
+        // Real-time synchronization
+        async function loadSettings() {
+            const { data, error } = await window.supabaseClient.from('site_settings').select('*');
+            if (data) {
+                data.forEach(setting => applySetting(setting.key, setting.value));
             }
         }
 
-        function saveBackgroundColor() {
-            const color = document.getElementById("editBackgroundColor").value;
-            if (color) {
-                document.body.style.background = color;
-                localStorage.setItem("backgroundColor", color);
-                alert("Tausta tallennettu!");
+        function applySetting(key, value) {
+            if (key === 'site_title') {
+                document.getElementById("mainTitle").textContent = value;
+                document.getElementById("editTitle").value = value;
+            } else if (key === 'background_color') {
+                document.body.style.background = value;
+                document.getElementById("editBackgroundColor").value = value;
+            } else if (key === 'background_url') {
+                if (value) document.body.style.backgroundImage = `url('${value}')`;
+                else document.body.style.backgroundImage = 'none';
+                document.getElementById("editBackgroundUrl").value = value;
             }
         }
 
-        function saveBackgroundUrl() {
-            const url = document.getElementById("editBackgroundUrl").value;
-            if (url.trim()) {
-                document.body.style.backgroundImage = "url('" + url + "')";
-                localStorage.setItem("backgroundUrl", url);
-                alert("Tausta-URL tallennettu!");
-            } else {
-                document.body.style.backgroundImage = "none";
-                localStorage.removeItem("backgroundUrl");
-                alert("Tausta-URL poistettu!");
-            }
-        }
+        // Subscribe to changes
+        window.supabaseClient
+            .channel('public:site_settings')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'site_settings' }, payload => {
+                applySetting(payload.new.key, payload.new.value);
+            })
+            .subscribe();
 
-        function loadSavedChanges() {
-            // Lataa tallennettu otsikko
-            const savedTitle = localStorage.getItem("siteTitle");
-            if (savedTitle) {
-                document.querySelector("h1").textContent = savedTitle;
-            }
-
-            // Lataa tallennettu taustaksi
-            const savedBgColor = localStorage.getItem("backgroundColor");
-            if (savedBgColor) {
-                document.body.style.background = savedBgColor;
-            }
-
-            // Lataa tallennettu tausta-URL
-            const savedBgUrl = localStorage.getItem("backgroundUrl");
-            if (savedBgUrl) {
-                document.body.style.backgroundImage = "url('" + savedBgUrl + "')";
-            }
-
-            // Tarkista kirjautumisen tila
-            if (localStorage.getItem("isLoggedIn") === "true") {
-                isLoggedIn = true;
-                updateUIForLoggedIn();
-                loadCurrentValues();
-            }
-        }
-
-        function resetSiteFromAdmin() {
-            if (confirm("Oletko VARMA? Kaikki muokkaukset poistetaan!")) {
-                localStorage.removeItem("siteTitle");
-                localStorage.removeItem("backgroundColor");
-                localStorage.removeItem("backgroundUrl");
-                alert("Sivun muokkaukset resetoitu! Sivu latautuu uudelleen...");
-                location.reload();
-            }
-        }
-
-        // Sulje modaali kun klikataan tausta
-        window.addEventListener("click", function(event) {
-            const modal = document.getElementById("loginModal");
-            if (event.target === modal) {
-                closeLoginModal();
-            }
-            const feedbackModal = document.getElementById("feedbackModal");
-            if (event.target === feedbackModal) {
-                closeFeedbackModal();
-            }
-        });
-
-        // Feedback-funktiot
-        function openFeedbackModal() {
-            document.getElementById("feedbackModal").classList.add("show");
-        }
-
-        function closeFeedbackModal() {
-            document.getElementById("feedbackModal").classList.remove("show");
-            document.getElementById("feedbackType").value = "";
-            document.getElementById("feedbackApp").value = "";
-            document.getElementById("feedbackEmail").value = "";
-            document.getElementById("feedbackText").value = "";
-        }
-
-        function submitFeedback(event) {
+        // Feedback submission
+        async function submitFeedback(event) {
             event.preventDefault();
-
-            const feedbackType = document.getElementById("feedbackType").value;
-            const feedbackApp = document.getElementById("feedbackApp").value;
-            const feedbackEmail = document.getElementById("feedbackEmail").value;
-            const feedbackText = document.getElementById("feedbackText").value;
-
-            // Tallenna palaute localStorage:hen
-            const feedbackData = {
-                type: feedbackType,
-                app: feedbackApp,
-                email: feedbackEmail,
-                message: feedbackText,
-                timestamp: new Date().toLocaleString("fi-FI")
+            const feedback = {
+                type: document.getElementById("feedbackType").value,
+                email: document.getElementById("feedbackEmail").value,
+                message: document.getElementById("feedbackText").value
             };
 
-            let allFeedback = JSON.parse(localStorage.getItem("allFeedback") || "[]");
-            allFeedback.push(feedbackData);
-            localStorage.setItem("allFeedback", JSON.stringify(allFeedback));
+            const { error } = await window.supabaseClient.from('feedback').insert([feedback]);
+            if (error) alert("Virhe lähetyksessä: " + error.message);
+            else {
+                alert("Kiitos palautteesta! 😊");
+                closeFeedbackModal();
+            }
+        }
 
-            alert("Kiitos palautteesta! 😊\n\nPalaute tallennettu onnistuneesti.");
-            closeFeedbackModal();
+        // Init
+        document.addEventListener("DOMContentLoaded", async () => {
+            await loadSettings();
+
+            // Check auth state
+            const { data: { session } } = await window.supabaseClient.auth.getSession();
+            if (session) updateUIForLoggedIn();
+
+            // Listen for auth changes
+            window.supabaseClient.auth.onAuthStateChange((event, session) => {
+                if (session) updateUIForLoggedIn();
+                else updateUIForLoggedOut();
+            });
+        });
+
+        // Close modals on click outside
+        window.onclick = function (event) {
+            if (event.target.className === 'modal show') closeLoginModal();
+            if (event.target.className === 'feedback-modal show') closeFeedbackModal();
         }
     </script>
 </body>
+
 </html>
